@@ -26,12 +26,14 @@ from __future__ import print_function
 import os
 
 import tensorflow as tf
-# import tensorflow_model_analysis as tfma # Step 5
+
 # import tensorflow_transform as tft # Step 4
 # from tensorflow_transform.beam.tft_beam_io import transform_fn_io # Step 4
 # from tensorflow_transform.saved import saved_transform_io # Step 4
 # from tensorflow_transform.tf_metadata import metadata_io # Step 4
 # from tensorflow_transform.tf_metadata import schema_utils # Step 4
+
+# import tensorflow_model_analysis as tfma # Step 5
 
 
 # Categorical features are assumed to each have a maximum value in the dataset.
