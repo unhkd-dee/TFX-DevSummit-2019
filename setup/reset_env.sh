@@ -4,18 +4,22 @@
 # and start with a 'clean' environment.  This will uninstall TF/TFX
 # libraries and airflow libraries.
 #
-# It will not delete any directories.  You'll want to delete
-# ~/airflow/dags/tfx and ~/airflow/dags/taxi on your own.
+# It will not delete the Airflow install itself.  You'll want to delete
+# ~/airflow on your own.
 #
 
+GREEN=$(tput setaf 2)
+NORMAL=$(tput sgr0)
+
+printf "${GREEN}Resetting TFX workshop${NORMAL}\n\n"
+
 pip uninstall tensorflow
+pip uninstall tfx
 pip uninstall tensorflow-model-analysis
 pip uninstall tensorflow-data-validation
 pip uninstall tensorflow-metadata
 pip uninstall tensorflow-transform
 pip uninstall apache-airflow
 
-echo ''
-echo 'Remember to delete ~/airflow/dags/taxi_pipeline*, ~/airflow/plugins/*,'
-echo '~/airflow/data/taxi_data, ~/airflow/data/tfx, and /var/tmp/tfx/logs/.'
-echo ''
+printf "\n\n${GREEN}TFX workshop has been reset${NORMAL}\n"
+printf "${GREEN}Remember to delete ~/airflow${NORMAL}\n"

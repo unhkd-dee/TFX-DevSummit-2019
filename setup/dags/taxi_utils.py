@@ -26,12 +26,12 @@ from __future__ import print_function
 import os
 
 import tensorflow as tf
-# import tensorflow_transform as transform # Step 4
+# import tensorflow_model_analysis as tfma # Step 5
+# import tensorflow_transform as tft # Step 4
 # from tensorflow_transform.beam.tft_beam_io import transform_fn_io # Step 4
 # from tensorflow_transform.saved import saved_transform_io # Step 4
 # from tensorflow_transform.tf_metadata import metadata_io # Step 4
 # from tensorflow_transform.tf_metadata import schema_utils # Step 4
-# import tensorflow_model_analysis as tfma # Step 5
 
 
 # Categorical features are assumed to each have a maximum value in the dataset.
@@ -67,6 +67,7 @@ _VOCAB_FEATURE_KEYS = [
 # Keys
 _LABEL_KEY = 'tips'
 _FARE_KEY = 'fare'
+
 
 
 # Step 4 START --------------------------
@@ -121,18 +122,18 @@ _FARE_KEY = 'fare'
 #   outputs = {}
 #   for key in _DENSE_FLOAT_FEATURE_KEYS:
 #     # Preserve this feature as a dense float, setting nan's to the mean.
-#     outputs[_transformed_name(key)] = transform.scale_to_z_score(
+#     outputs[_transformed_name(key)] = tft.scale_to_z_score(
 #         _fill_in_missing(inputs[key]))
 
 #   for key in _VOCAB_FEATURE_KEYS:
 #     # Build a vocabulary for this feature.
-#     outputs[_transformed_name(key)] = transform.compute_and_apply_vocabulary(
+#     outputs[_transformed_name(key)] = tft.compute_and_apply_vocabulary(
 #         _fill_in_missing(inputs[key]),
 #         top_k=_VOCAB_SIZE,
 #         num_oov_buckets=_OOV_SIZE)
 
 #   for key in _BUCKET_FEATURE_KEYS:
-#     outputs[_transformed_name(key)] = transform.bucketize(
+#     outputs[_transformed_name(key)] = tft.bucketize(
 #         _fill_in_missing(inputs[key]), _FEATURE_BUCKET_COUNT)
 
 #   for key in _CATEGORICAL_FEATURE_KEYS:
@@ -258,7 +259,7 @@ _FARE_KEY = 'fare'
 #   raw_feature_spec = _get_raw_feature_spec(schema)
 
 #   serialized_tf_example = tf.placeholder(
-#      dtype=tf.string, shape=[None], name='input_example_tensor')
+#       dtype=tf.string, shape=[None], name='input_example_tensor')
 
 #   # Add a parse_example operator to the tensorflow graph, which will parse
 #   # raw, untransformed, tf examples.
@@ -267,9 +268,9 @@ _FARE_KEY = 'fare'
 #   # Now that we have our raw examples, process them through the tf-transform
 #   # function computed during the preprocessing step.
 #   _, transformed_features = (
-#      saved_transform_io.partially_apply_saved_transform(
-#          os.path.join(transform_output, transform_fn_io.TRANSFORM_FN_DIR),
-#          features))
+#       saved_transform_io.partially_apply_saved_transform(
+#           os.path.join(transform_output, transform_fn_io.TRANSFORM_FN_DIR),
+#           features))
 
 #   # The key name MUST be 'examples'.
 #   receiver_tensors = {'examples': serialized_tf_example}
@@ -279,9 +280,9 @@ _FARE_KEY = 'fare'
 #   features.update(transformed_features)
 
 #   return tfma.export.EvalInputReceiver(
-#      features=features,
-#      receiver_tensors=receiver_tensors,
-#      labels=transformed_features[_transformed_name(_LABEL_KEY)])
+#       features=features,
+#       receiver_tensors=receiver_tensors,
+#       labels=transformed_features[_transformed_name(_LABEL_KEY)])
 
 
 # def _input_fn(filenames, transform_output, batch_size=200):

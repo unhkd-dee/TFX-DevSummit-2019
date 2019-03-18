@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+import logging
 import os
 from tfx.components.evaluator.component import Evaluator
 from tfx.components.example_gen.csv_example_gen.component import CsvExampleGen
@@ -28,39 +29,56 @@ from tfx.components.schema_gen.component import SchemaGen
 from tfx.components.statistics_gen.component import StatisticsGen
 from tfx.components.trainer.component import Trainer
 from tfx.components.transform.component import Transform
-from tfx.orchestration.airflow.airflow_runner import AirflowDAGRunner as TfxRunner
-from tfx.orchestration.pipeline import PipelineDecorator
+from tfx.proto import evaluator_pb2
+from tfx.proto import pusher_pb2
+from tfx.proto import trainer_pb2
 from tfx.utils.dsl_utils import csv_input
 
+from tfx.orchestration.airflow.airflow_runner import AirflowDAGRunner
+from tfx.orchestration.pipeline import PipelineDecorator
 
-# Directory and data locations
-home_dir = os.path.join(os.environ['HOME'], 'airflow/')
-pipeline_root = os.path.join(home_dir, 'data/tfx/pipelines/')
-data_root = os.path.join(home_dir, 'data/taxi_data/')
 
+# This example assumes that the taxi data is stored in ~/taxi/data and the
+# taxi utility function is in ~/taxi.  Feel free to customize this as needed.
+_taxi_root = os.path.join(os.environ['HOME'], 'airflow')
+_data_root = os.path.join(_taxi_root, 'data/taxi_data')
 # Python module file to inject customized logic into the TFX components. The
 # Transform and Trainer both require user-defined functions to run successfully.
-taxi_module_file = os.path.join(home_dir, 'dags/taxi_utils_solution.py')
-
+_taxi_module_file = os.path.join(_taxi_root, 'dags/taxi_utils_solution.py')
 # Path which can be listened to by the model server.  Pusher will output the
 # trained model here.
-serving_model_dir = os.path.join(pipeline_root, 'serving_model/taxi_solution')
+_serving_model_dir = os.path.join(_taxi_root, 'serving_model/tfx_example_solution')
+
+# Directory and data locations.  This example assumes all of the chicago taxi
+# example code and metadata library is relative to $HOME, but you can store
+# these files anywhere on your local filesystem.
+_tfx_root = os.path.join(_taxi_root, 'tfx')
+_pipeline_root = os.path.join(_tfx_root, 'pipelines')
+_metadata_db_root = os.path.join(_tfx_root, 'metadata')
+_log_root = os.path.join(_tfx_root, 'logs')
 
 # Airflow-specific configs; these will be passed directly to airflow
-airflow_config = {
+_airflow_config = {
     'schedule_interval': None,
     'start_date': datetime.datetime(2019, 1, 1),
 }
 
+# Logging overrides
+logger_overrides = {
+    'log_root': _log_root,
+    'log_level': logging.INFO
+}
+
 
 @PipelineDecorator(
-    pipeline_name='taxi_solution',
+    pipeline_name='TFX_Example_Solution',
     enable_cache=True,
-    metadata_db_root=os.path.join(home_dir, 'data/tfx/metadata'),
-    pipeline_root=pipeline_root)
-def create_pipeline():
+    metadata_db_root=_metadata_db_root,
+    additional_pipeline_args={'logger_args': logger_overrides},
+    pipeline_root=_pipeline_root)
+def _create_pipeline():
   """Implements the chicago taxi pipeline with TFX."""
-  examples = csv_input(data_root)
+  examples = csv_input(_data_root)
 
   # Brings data into the pipeline or otherwise joins/converts training data.
   example_gen = CsvExampleGen(input_base=examples)
@@ -73,29 +91,31 @@ def create_pipeline():
 
   # Performs anomaly detection based on statistics and data schema.
   validate_stats = ExampleValidator(
-      stats=statistics_gen.outputs.output,
-      schema=infer_schema.outputs.output)
+      stats=statistics_gen.outputs.output, schema=infer_schema.outputs.output)
 
   # Performs transformations and feature engineering in training and serving.
   transform = Transform(
       input_data=example_gen.outputs.examples,
       schema=infer_schema.outputs.output,
-      module_file=taxi_module_file)
+      module_file=_taxi_module_file)
 
   # Uses user-provided Python function that implements a model using TF-Learn.
   trainer = Trainer(
-      module_file=taxi_module_file,
+      module_file=_taxi_module_file,
       transformed_examples=transform.outputs.transformed_examples,
       schema=infer_schema.outputs.output,
       transform_output=transform.outputs.transform_output,
-      train_steps=10000,
-      eval_steps=5000,
-      warm_starting=True)
+      train_args=trainer_pb2.TrainArgs(num_steps=10000),
+      eval_args=trainer_pb2.EvalArgs(num_steps=5000))
 
   # Uses TFMA to compute a evaluation statistics over features of a model.
   model_analyzer = Evaluator(
       examples=example_gen.outputs.examples,
-      model_exports=trainer.outputs.output)
+      model_exports=trainer.outputs.output,
+      feature_slicing_spec=evaluator_pb2.FeatureSlicingSpec(specs=[
+          evaluator_pb2.SingleSlicingSpec(
+              column_for_slicing=['trip_start_hour'])
+      ]))
 
   # Performs quality validation of a candidate model (compared to a baseline).
   model_validator = ModelValidator(
@@ -106,7 +126,9 @@ def create_pipeline():
   pusher = Pusher(
       model_export=trainer.outputs.output,
       model_blessing=model_validator.outputs.blessing,
-      serving_model_dir=serving_model_dir)
+      push_destination=pusher_pb2.PushDestination(
+          filesystem=pusher_pb2.PushDestination.Filesystem(
+              base_directory=_serving_model_dir)))
 
   return [
       example_gen, statistics_gen, infer_schema, validate_stats, transform,
@@ -114,4 +136,4 @@ def create_pipeline():
   ]
 
 
-pipeline = TfxRunner(airflow_config).run(create_pipeline())
+pipeline = AirflowDAGRunner(_airflow_config).run(_create_pipeline())
