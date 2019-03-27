@@ -29,13 +29,12 @@ from tfx.components.schema_gen.component import SchemaGen
 from tfx.components.statistics_gen.component import StatisticsGen
 from tfx.components.trainer.component import Trainer
 from tfx.components.transform.component import Transform
+from tfx.orchestration.airflow.airflow_runner import AirflowDAGRunner
+from tfx.orchestration.pipeline import PipelineDecorator
 from tfx.proto import evaluator_pb2
 from tfx.proto import pusher_pb2
 from tfx.proto import trainer_pb2
 from tfx.utils.dsl_utils import csv_input
-
-from tfx.orchestration.airflow.airflow_runner import AirflowDAGRunner
-from tfx.orchestration.pipeline import PipelineDecorator
 
 
 # This example assumes that the taxi data is stored in ~/taxi/data and the
@@ -47,7 +46,7 @@ _data_root = os.path.join(_taxi_root, 'data/taxi_data')
 _taxi_module_file = os.path.join(_taxi_root, 'dags/taxi_utils_solution.py')
 # Path which can be listened to by the model server.  Pusher will output the
 # trained model here.
-_serving_model_dir = os.path.join(_taxi_root, 'serving_model/tfx_example_solution')
+_serving_model_dir = os.path.join(_taxi_root,'saved_models/taxi_solution')
 
 # Directory and data locations.  This example assumes all of the chicago taxi
 # example code and metadata library is relative to $HOME, but you can store
@@ -71,7 +70,7 @@ logger_overrides = {
 
 
 @PipelineDecorator(
-    pipeline_name='TFX_Example_Solution',
+    pipeline_name='taxi_solution',
     enable_cache=True,
     metadata_db_root=_metadata_db_root,
     additional_pipeline_args={'logger_args': logger_overrides},

@@ -20,12 +20,13 @@ from __future__ import print_function
 import datetime
 import logging
 import os
-from tfx.utils.dsl_utils import csv_input
+
 from tfx.components.example_gen.csv_example_gen.component import CsvExampleGen
 
 # from tfx.components.statistics_gen.component import StatisticsGen # Step 3
 # from tfx.components.schema_gen.component import SchemaGen # Step 3
-# from tfx.components.example_validator.component import ExampleValidator # Step 3
+# from tfx.components.example_validator.component \ # Step 3
+#   import ExampleValidator # Step 3
 
 # from tfx.components.transform.component import Transform # Step 4
 
@@ -41,6 +42,7 @@ from tfx.components.example_gen.csv_example_gen.component import CsvExampleGen
 
 from tfx.orchestration.airflow.airflow_runner import AirflowDAGRunner
 from tfx.orchestration.pipeline import PipelineDecorator
+from tfx.utils.dsl_utils import csv_input
 
 
 # This example assumes that the taxi data is stored in ~/taxi/data and the
@@ -52,7 +54,7 @@ _data_root = os.path.join(_taxi_root, 'data/taxi_data')
 _taxi_module_file = os.path.join(_taxi_root, 'dags/taxi_utils.py')
 # Path which can be listened to by the model server.  Pusher will output the
 # trained model here.
-_serving_model_dir = os.path.join(_taxi_root, 'serving_model/tfx_example')
+_serving_model_dir = os.path.join(_taxi_root, 'saved_models/taxi')
 
 # Directory and data locations.  This example assumes all of the chicago taxi
 # example code and metadata library is relative to $HOME, but you can store
@@ -76,7 +78,7 @@ logger_overrides = {
 
 
 @PipelineDecorator(
-    pipeline_name='TFX_Example',
+    pipeline_name='taxi',
     enable_cache=True,
     metadata_db_root=_metadata_db_root,
     additional_pipeline_args={'logger_args': logger_overrides},
@@ -89,14 +91,16 @@ def _create_pipeline():
   example_gen = CsvExampleGen(input_base=examples)
 
   # Computes statistics over data for visualization and example validation.
-  # statistics_gen = StatisticsGen(input_data=example_gen.outputs.examples) # Step 3
+  # statistics_gen = # Step 3
+  #   StatisticsGen(input_data=example_gen.outputs.examples) # Step 3
 
   # Generates schema based on statistics files.
   # infer_schema = SchemaGen(stats=statistics_gen.outputs.output) # Step 3
 
   # Performs anomaly detection based on statistics and data schema.
   # validate_stats = ExampleValidator( # Step 3
-  #     stats=statistics_gen.outputs.output, schema=infer_schema.outputs.output) # Step 3
+  #     stats=statistics_gen.outputs.output, # Step 3
+  #           schema=infer_schema.outputs.output) # Step 3
 
   # Performs transformations and feature engineering in training and serving.
   # transform = Transform( # Step 4
@@ -124,7 +128,8 @@ def _create_pipeline():
 
   # Performs quality validation of a candidate model (compared to a baseline).
   # model_validator = ModelValidator( # Step 7
-  #     examples=example_gen.outputs.examples, model=trainer.outputs.output) # Step 7
+  #     examples=example_gen.outputs.examples, # Step 7
+  #              model=trainer.outputs.output) # Step 7
 
   # Checks whether the model passed the validation steps and pushes the model
   # to a file destination if check passed.

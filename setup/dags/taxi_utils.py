@@ -15,17 +15,14 @@
 
 For a TFX pipeline to successfully run, a preprocessing_fn and a
 _build_estimator function needs to be provided.  This file contains both.
-
-This file is equivalent to examples/chicago_taxi/trainer/model.py and
-examples/chicago_taxi/preprocess.py.
 """
 
 from __future__ import division
 from __future__ import print_function
 
-import os
+import os  # pylint: disable=unused-import
 
-import tensorflow as tf
+import tensorflow as tf  # pylint: disable=unused-import
 
 # import tensorflow_transform as tft # Step 4
 # from tensorflow_transform.beam.tft_beam_io import transform_fn_io # Step 4
@@ -69,8 +66,6 @@ _VOCAB_FEATURE_KEYS = [
 # Keys
 _LABEL_KEY = 'tips'
 _FARE_KEY = 'fare'
-
-
 
 # Step 4 START --------------------------
 # def _transformed_name(key):
@@ -149,12 +144,11 @@ _FARE_KEY = 'fare'
 #       tf.cast(tf.zeros_like(taxi_fare), tf.int64),
 #       # Test if the tip was > 20% of the fare.
 #       tf.cast(
-#           tf.greater(tips, tf.multiply(taxi_fare, tf.constant(0.2))), tf.int64))
+#           tf.greater(tips, tf.multiply(taxi_fare, tf.constant(0.2))),
+#                      tf.int64))
 
 #   return outputs
 # Step 4 END --------------------------
-
-
 
 # Step 5 START --------------------------
 # def _build_estimator(transform_output,
@@ -166,8 +160,8 @@ _FARE_KEY = 'fare'
 #   Args:
 #     transform_output: directory in which the tf-transform model was written
 #       during the preprocessing step.
-#     config: tf.contrib.learn.RunConfig defining the runtime environment for the
-#       estimator (including model_dir).
+#     config: tf.contrib.learn.RunConfig defining the runtime environment for
+#       the estimator (including model_dir).
 #     hidden_units: [int], the layer sizes of the DNN (input layer first)
 #     warm_start_from: Optional directory to warm start from.
 
@@ -319,7 +313,7 @@ _FARE_KEY = 'fare'
 #   """Build the estimator using the high level API.
 
 #   Args:
-#     hparams: Holds hyperparameters used to train the model as name/value pairs.
+#     hparams: Holds hyperparameters used to train the model as name/value pairs
 #     schema: Holds the schema of the training examples.
 
 #   Returns:

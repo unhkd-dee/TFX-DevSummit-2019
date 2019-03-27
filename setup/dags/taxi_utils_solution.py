@@ -15,9 +15,6 @@
 
 For a TFX pipeline to successfully run, a preprocessing_fn and a
 _build_estimator function needs to be provided.  This file contains both.
-
-This file is equivalent to examples/chicago_taxi/trainer/model.py and
-examples/chicago_taxi/preprocess.py.
 """
 
 from __future__ import division
@@ -380,3 +377,4 @@ def trainer_fn(hparams, schema):
       'eval_spec': eval_spec,
       'eval_input_receiver_fn': receiver_fn
   }
+
