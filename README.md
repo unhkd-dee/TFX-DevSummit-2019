@@ -48,8 +48,8 @@ following a typical ML development process.  Here are the steps:
 ## Tutorial Materials
 
 The code for this tutorial is available at:
-[https://github.com/tensorflow/tfx/tree/master/examples/workshop](
-https://github.com/tensorflow/tfx/tree/master/examples/workshop)
+[https://github.com/tensorflow/tfx/tree/master/examples/](
+https://github.com/tensorflow/tfx/tree/master/examples/)
 
 The code is organized by the steps that you're working on, so
 for each step you'll have the code you need and instructions
