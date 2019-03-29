@@ -1,6 +1,6 @@
 # TFX Developer Tutorial
 
-[![Python](https://img.shields.io/pypi/pyversions/tfx.svg?style=plastic)](
+[![Python](https://img.shields.io/pypi/pyversions/tfx.svg)](
 https://github.com/tensorflow/tfx)
 [![PyPI](https://badge.fury.io/py/tfx.svg)](https://badge.fury.io/py/tfx)
 
